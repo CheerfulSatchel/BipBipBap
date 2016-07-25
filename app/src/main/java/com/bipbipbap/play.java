@@ -1,5 +1,6 @@
 package com.bipbipbap;
 
+import metronome.*;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,13 +13,16 @@ import android.widget.EditText;
  */
 public class play extends Activity{
 
-    Button playButton;
+    //Components: Tap button, trace line, Blow into phone,
+    Button tapButton;
 
+    Metronome myMetronome;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.v("AWWW YEEEEAAAAHH ", "POOP");
-
+        myMetronome = new Metronome();
+        //myMetronome.start(155);
 
     }
 
