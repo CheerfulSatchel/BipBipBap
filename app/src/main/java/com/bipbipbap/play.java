@@ -17,8 +17,12 @@ import android.widget.LinearLayout;
 public class play extends Activity{
 
     Button tapButton;
-    Metronome myMetronome;
-    int bpm = 100;
+    //This is the lone metronome
+    Metronome metro;
+    //This is the everchanging action star, Hank
+    Action hank;
+    //Initial bpm is set to 45
+    int bpm = 45;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,19 +30,20 @@ public class play extends Activity{
         setContentView(R.layout.play);
         Log.v("AWWW YEEEEAAAAHH ", "POOP");
 
-        Action act = new Action() {
+        hank = new Action() {
             public void run(){
                 System.out.println("IT'S THE SOCIAL-JUSTICE-MOBILE");
             }
         };
-        myMetronome = new Metronome(act, 125);
+
+        metro = new Metronome(hank, 125);
 
         tapButton = (Button) findViewById(R.id.button);
         tapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 v.getRootView().setBackgroundColor(Color.GREEN);
-                myMetronome.stop();
+                metro.stop();
             }
         });
     }
