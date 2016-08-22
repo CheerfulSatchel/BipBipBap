@@ -21,10 +21,12 @@ public class play extends Activity{
     Button tapButton;
     //This is the lone metronome
     Metronome metro;
-    //This is the everchanging action star, Hank
+    //This is the everchanging action star, hank
     Action hank;
     //Initial bpm is set to 45
     int bpm = 45;
+    //Keepin track of the points won by the user
+    int pointsCounter = 0;
 
     //This is an arraylist holding the commands.
     ArrayList<Action> commands = new ArrayList<Action>();
@@ -38,20 +40,29 @@ public class play extends Activity{
         System.out.println("LOOK:" + commands);
 
         hank = new Action() {
-
-            public void onCancel() {
-                System.out.println("Cancelling!");
-            };
+            private boolean incrementTicks = false;
+            private int ticks = 0;
 
             public void run() {
                 System.out.println("IT'S THE SOCIAL-JUSTICE-MOBILE");
 
+                if(incrementTicks){
+                    ticks++;
+                }
+
+                incrementTicks = !incrementTicks;
+                System.out.println("Yee! " + ticks);
+
+                if(ticks == 6){
+                    System.out.println("Tell the user to do something now.");
+                    ticks = 0;
+                }
                 tapButton = (Button) findViewById(R.id.button);
                 tapButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         v.getRootView().setBackgroundColor(Color.GREEN);
-                        onCancel();
+                        //onCancel();
                         metro.stop();
                     }
                 });
@@ -59,6 +70,5 @@ public class play extends Activity{
         };
 
         metro = new Metronome(hank, bpm);
-
     }
 }
