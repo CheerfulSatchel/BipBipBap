@@ -27,6 +27,7 @@ public class MainActivity extends ActionBarActivity {
                 Intent myIntent = new Intent(MainActivity.this, play.class);
 
                 MainActivity.this.startActivity(myIntent);
+                finish();
             }
         });
     }
