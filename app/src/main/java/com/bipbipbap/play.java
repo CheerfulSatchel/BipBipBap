@@ -13,6 +13,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -20,6 +23,9 @@ import java.util.ArrayList;
  * Created by James Wu on 7/10/2016.
  */
 public class play extends Activity{
+
+    private SeekBar seekBar;
+    private TextView seekBarStatus;
 
     final int successColor = Color.GREEN;
     final int defaultColor = Color.WHITE;
@@ -59,13 +65,40 @@ public class play extends Activity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play);
+
         Button tapButton = (Button) findViewById(R.id.button);
         Button exitButton = (Button) findViewById(R.id.exitButton);
+
+        //Initialize the seekbar and its counter
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBarStatus = (TextView) findViewById(R.id.seekBarStatus);
 
         Log.v("AWWW YEEEEAAAAHH ", "POOP");
 
         System.out.println("LOOK:" + commands);
 
+        seekBarStatus.setText("Level: " + seekBar.getProgress() + "/" + seekBar.getMax());
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            int level = 0;
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                level = progress;
+                Toast.makeText(getApplicationContext(), "Changing seekbar's progress", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                Toast.makeText(getApplicationContext(), "Start tracking seekbar progress", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                seekBarStatus.setText("Level: " + level + "/" + seekBar.getMax());
+                Toast.makeText(getApplicationContext(), "Stop tracking seekbar progress", Toast.LENGTH_SHORT).show();
+            }
+        });
         hank = new Action() {
             private boolean tapped = false;
             private boolean incrementTicks = false;
