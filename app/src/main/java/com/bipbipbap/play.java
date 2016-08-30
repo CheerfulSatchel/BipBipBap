@@ -1,83 +1,44 @@
 package com.bipbipbap;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import metronome.*;
+import metronome.Metronome;
+
 import android.app.Activity;
-import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.ArrayList;
 
 /**
  * Created by James Wu on 7/10/2016.
  */
 public class play extends Activity{
 
-    private SeekBar seekBar;
-    private TextView seekBarStatus;
-
-    final int successColor = Color.GREEN;
-    final int defaultColor = Color.WHITE;
-    final int failColor = Color.RED;
-    final int blinkColor = Color.YELLOW;
-    int bpm = 45;
-    //This is the lone metronome
-    final Metronome metro = new Metronome(bpm);
-    //This is the everchanging action star, hank
-    Action hank;
-    //Initial bpm is set to 45
-    //Keepin track of the points won by the user
-    int pointsCounter = 0;
-
-    final Timer colorTimer = new Timer();
-    final long colorDelay = 100; //Color will change back to default in 0.1 seconds
-
-    //This is an arraylist holding the commands.
-    ArrayList<Action> commands = new ArrayList<Action>();
-
-    private void setActivityBackgroundColor(int color) {
-        runOnUiThread(()-> {
-            this.getWindow().getDecorView().setBackgroundColor(color);
-        });
-    }
-
-    private void signalActivityBackgroundColor(int color) {
-        setActivityBackgroundColor(color);
-        colorTimer.schedule(new TimerTask() {
-           public void run() {
-               setActivityBackgroundColor(defaultColor);
-           }
-        }, colorDelay);
-    }
+    private int bpm = 45;
+    private final Metronome metronome = new Metronome(bpm);
+    private final GameUI ui = new GameUI(play.this, metronome);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.play);
 
+        //SIMULATION VALUES
+        Scheduler scheduler = new Scheduler(metronome);
+        long score = 0;
+
+        //UI VALUES
         Button tapButton = (Button) findViewById(R.id.button);
-        Button exitButton = (Button) findViewById(R.id.exitButton);
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
+        TextView seekBarStatus = (TextView) findViewById(R.id.seekBarStatus);
+        TextView difficulty = (TextView) findViewById(R.id.playDifficultyNumber);
+        TextView scoreLabel = (TextView) findViewById(R.id.playScoreNumber);
 
-        //Initialize the seekbar and its counter
-        seekBar = (SeekBar) findViewById(R.id.seekBar);
-        seekBarStatus = (TextView) findViewById(R.id.seekBarStatus);
-
-        Log.v("AWWW YEEEEAAAAHH ", "POOP");
-
-        System.out.println("LOOK:" + commands);
 
         seekBarStatus.setText("Level: " + seekBar.getProgress() + "/" + seekBar.getMax());
+        difficulty.setText(Integer.toString(Settings.DIFFICULTY));
+        scoreLabel.setText(Long.toString(score)); //placeholder, doesn't do anything atm.
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             int level = 0;
@@ -99,57 +60,59 @@ public class play extends Activity{
                 Toast.makeText(getApplicationContext(), "Stop tracking seekbar progress", Toast.LENGTH_SHORT).show();
             }
         });
-        hank = new Action() {
-            private boolean tapped = false;
-            private boolean incrementTicks = false;
-            private int ticks = 0;
+
+
+        //This is the everchanging action star, hank
+        EndableAction hank = new EndableAction(scheduler) {
+            private int ticks;
+
+            private void reset() {
+                ticks = 0;
+            }
+
+            public void onStart() {
+                reset();
+                tapButton.setOnClickListener((View v) -> {
+                    ui.blinkFail();
+                    completeAction();
+                });
+            }
 
             public void run() {
-                System.out.println("IT'S THE SOCIAL-JUSTICE-MOBILE");
-
-                if(incrementTicks){
-                    int activityColor = blinkColor;
-
-                    switch(++ticks) {
-                        case 4:
-                            tapped = false;
-                            System.out.println("Tap the Whew Wee Button.");
-                            tapButton.setOnClickListener((View v)-> {
-                                tapped = true;
-                                signalActivityBackgroundColor(successColor);
-                            });
-                            break;
-                        case 8:
-                            if (!tapped) {
-                                System.out.println("FAILED");
-                                activityColor = failColor;
-                            }
-                            tapButton.setOnClickListener((View v)-> {
-                                signalActivityBackgroundColor(failColor);
-                            });
-                            ticks = 0;
-                            break;
-                    }
-                    signalActivityBackgroundColor(activityColor);
+                switch (++ticks) {
+                    case 1:
+                        tapButton.setOnClickListener((View v) -> {
+                            ui.blinkSuccess();
+                            ui.resetSchedule();
+                            completeAction();
+                        });
+                        System.out.println("Tap the Whew Wee Button.");
+                        ui.scheduleFail(3); // fail on 4th tick
+                        break;
+                    case 4:
+                        tapButton.setOnClickListener((View v) -> {
+                            ui.blinkFail();
+                        });
+                        System.out.println("FAILED");
+                        completeAction();
+                        break;
                 }
-
-                incrementTicks = !incrementTicks;
                 System.out.println("Yee! " + ticks);
-
             }
         };
+
         tapButton.setOnClickListener((View v) -> {
-            signalActivityBackgroundColor(failColor);
+            ui.blinkFail();
         });
 
-        // Return to MainActivity
-        exitButton.setOnClickListener((View v) -> {
-            metro.stop();
-            colorTimer.cancel();
-            this.startActivity(new Intent(this, MainActivity.class));
-            finish();
-        });
+        scheduler.addEndableAction(hank);
+        scheduler.begin();
+    }
 
-        metro.addAction(hank);
+    public void onBackPressed() {
+        ui.close();
+        metronome.stop();
+        finish();
+        super.onBackPressed();
     }
 }

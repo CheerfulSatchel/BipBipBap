@@ -13,23 +13,24 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-       private Button playButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Log.v("Hello: ", "POOP");
-        playButton = (Button) findViewById(R.id.play_button);
 
-        playButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent myIntent = new Intent(MainActivity.this, play.class);
+        Button playButton = (Button) findViewById(R.id.play_button);
+        Button settingsButton = (Button) findViewById(R.id.settings_button);
 
-                MainActivity.this.startActivity(myIntent);
-                finish();
-            }
+        playButton.setOnClickListener((View v) -> {
+            Intent myIntent = new Intent(MainActivity.this, play.class);
+
+            MainActivity.this.startActivity(myIntent);
+        });
+
+        settingsButton.setOnClickListener((View v) -> {
+            MainActivity.this.startActivity(new Intent(MainActivity.this, Settings.class));
         });
     }
 
